@@ -1,0 +1,1146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>ConvertX — Free Unit & Currency Converter</title>
+
+<!-- SEO -->
+<meta name="description" content="ConvertX: Fast, free unit and currency converter. Convert length, weight, temperature, area, speed, volume, time, pressure, data storage, and live currency rates — all in one page.">
+<meta name="keywords" content="unit converter, currency converter, length converter, weight converter, temperature converter, metric converter, online converter, free converter">
+<meta name="author" content="ConvertX">
+<meta name="robots" content="index, follow">
+
+<!-- Open Graph -->
+<meta property="og:title" content="ConvertX — Free Unit & Currency Converter">
+<meta property="og:description" content="Convert anything instantly. 10 converter types including live currency rates. Fast and free."><!-- FIX 2: Removed "no ads" claim — UI contains ad slots -->
+<meta property="og:type" content="website">
+<!-- FIX 1: Removed fake domain og:url and og:image — add your real deployed URL here when known -->
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ConvertX — Free Unit & Currency Converter">
+<meta name="twitter:description" content="Convert anything instantly. 10 converter types. Fast and free.">
+
+<!-- Favicon (replace href with your actual icon file) -->
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='6' fill='%230a0a0a'/><text x='4' y='24' font-size='22' font-family='serif'>⇄</text></svg>">
+
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0a; --surface: #111; --surface2: #1a1a1a;
+    --border: #222; --accent: #e8ff00; --text: #f0f0f0;
+    --muted: #555; --dim: #2a2a2a;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  html { font-size:16px; }
+  body { background:var(--bg); color:var(--text); font-family:'DM Sans',sans-serif; min-height:100vh; overflow-x:hidden; }
+  body::before {
+    content:''; position:fixed; inset:0; pointer-events:none; z-index:999; opacity:0.4;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  }
+
+  /* HEADER */
+  header {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 20px; border-bottom:1px solid var(--border);
+    position:sticky; top:0; background:rgba(10,10,10,0.96);
+    backdrop-filter:blur(12px); z-index:100;
+  }
+  .logo { font-family:'Bebas Neue',sans-serif; font-size:1.7rem; letter-spacing:3px; color:var(--accent); text-shadow:0 0 24px rgba(232,255,0,0.25); }
+  .logo span { color:var(--text); }
+  .tagline { font-family:'DM Mono',monospace; font-size:0.58rem; color:var(--muted); letter-spacing:2px; text-transform:uppercase; text-align:right; line-height:1.6; }
+
+  /* AD BANNER */
+  .ad-banner {
+    background:var(--surface); border-bottom:1px solid var(--border);
+    padding:10px; text-align:center; font-family:'DM Mono',monospace;
+    font-size:0.58rem; color:var(--muted); letter-spacing:1px;
+    min-height:50px; display:flex; align-items:center; justify-content:center;
+  }
+
+  /* LAYOUT */
+  main { max-width:900px; margin:0 auto; padding:18px 14px 40px; }
+  .layout { display:grid; grid-template-columns:1fr 160px; gap:18px; align-items:start; }
+
+  /* TABS - scrollable row */
+  .tabs-wrap {
+    overflow-x:auto; -webkit-overflow-scrolling:touch; scrollbar-width:none;
+    margin-bottom:16px; background:var(--surface);
+    border:1px solid var(--border); border-radius:6px; padding:4px;
+  }
+  .tabs-wrap::-webkit-scrollbar { display:none; }
+  .tabs { display:flex; gap:2px; width:max-content; min-width:100%; }
+  .tab {
+    padding:8px 13px; background:transparent; border:none; color:var(--muted);
+    font-family:'DM Mono',monospace; font-size:0.65rem; letter-spacing:1px;
+    text-transform:uppercase; cursor:pointer; border-radius:4px;
+    transition:all 0.15s; white-space:nowrap; flex-shrink:0;
+  }
+  .tab:hover { color:var(--text); background:var(--surface2); }
+  .tab.active { background:var(--accent); color:#000; font-weight:500; }
+
+  /* CARD */
+  .converter-card {
+    background:var(--surface); border:1px solid var(--border);
+    border-radius:6px; overflow:hidden; animation:slideIn 0.18s ease;
+  }
+  @keyframes slideIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+  .card-header {
+    padding:14px 18px; border-bottom:1px solid var(--border);
+    display:flex; align-items:center; justify-content:space-between;
+  }
+  .card-title { font-family:'Bebas Neue',sans-serif; font-size:1.25rem; letter-spacing:2px; }
+  .live-badge {
+    font-family:'DM Mono',monospace; font-size:0.56rem; letter-spacing:2px;
+    color:var(--accent); border:1px solid var(--accent); padding:3px 8px;
+    border-radius:2px; display:flex; align-items:center; gap:5px; flex-shrink:0;
+  }
+  .live-dot { width:5px; height:5px; background:var(--accent); border-radius:50%; animation:blink 1.5s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+  /* BODY */
+  .converter-body { padding:18px; }
+
+  /* FROM/TO — always 2 columns */
+  .unit-row { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:12px; }
+  .unit-group label {
+    display:block; font-family:'DM Mono',monospace; font-size:0.56rem;
+    letter-spacing:2px; color:var(--muted); text-transform:uppercase; margin-bottom:5px;
+  }
+  .unit-select {
+    width:100%; background:var(--surface2); border:1px solid var(--border); color:var(--text);
+    padding:8px 28px 8px 10px; font-family:'DM Sans',sans-serif; font-size:0.8rem;
+    border-radius:4px; cursor:pointer; outline:none; transition:border-color 0.15s;
+    appearance:none; -webkit-appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23555' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 8px center;
+    text-overflow:ellipsis; white-space:nowrap; overflow:hidden;
+  }
+  .unit-select:focus { border-color:var(--accent); }
+
+  /* INPUT/RESULT */
+  .io-row { display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:end; margin-bottom:12px; }
+  .input-group label {
+    display:block; font-family:'DM Mono',monospace; font-size:0.56rem;
+    letter-spacing:2px; color:var(--muted); text-transform:uppercase; margin-bottom:5px;
+  }
+  .number-input {
+    width:100%; background:var(--bg); border:1px solid var(--border); color:var(--text);
+    padding:12px 12px; font-family:'DM Mono',monospace; font-size:1.2rem; font-weight:300;
+    border-radius:4px; outline:none; transition:border-color 0.15s; -webkit-appearance:none;
+  }
+  .number-input:focus { border-color:var(--accent); box-shadow:0 0 0 1px var(--accent); }
+  .result-display {
+    width:100%; background:var(--dim); border:1px solid var(--border); color:var(--accent);
+    padding:12px 12px; font-family:'DM Mono',monospace; font-size:1.2rem;
+    border-radius:4px; min-height:50px; word-break:break-all;
+  }
+  .swap-btn {
+    background:var(--surface2); border:1px solid var(--border); color:var(--muted);
+    width:36px; height:36px; border-radius:50%; display:flex; align-items:center;
+    justify-content:center; cursor:pointer; transition:all 0.15s; font-size:0.9rem; flex-shrink:0;
+    margin-bottom:2px;
+  }
+  .swap-btn:hover { border-color:var(--accent); color:var(--accent); transform:rotate(180deg); }
+
+  /* FORMULA */
+  .formula-bar {
+    background:var(--bg); border:1px solid var(--border); border-radius:4px;
+    padding:7px 11px; font-family:'DM Mono',monospace; font-size:0.65rem;
+    color:var(--muted); word-break:break-word; line-height:1.5;
+  }
+  .currency-status { font-family:'DM Mono',monospace; font-size:0.56rem; color:var(--muted); margin-top:5px; }
+
+  /* COPY */
+  .copy-btn {
+    margin-top:10px; background:transparent; border:1px solid var(--border); color:var(--muted);
+    padding:6px 13px; font-family:'DM Mono',monospace; font-size:0.58rem; letter-spacing:1px;
+    cursor:pointer; border-radius:4px; transition:all 0.15s; text-transform:uppercase;
+  }
+  .copy-btn:hover { border-color:var(--accent); color:var(--accent); }
+
+  /* QUICK REF */
+  .quick-ref { margin-top:18px; }
+  .quick-ref-title {
+    font-family:'DM Mono',monospace; font-size:0.56rem; letter-spacing:2px; color:var(--muted);
+    text-transform:uppercase; margin-bottom:9px; padding-bottom:7px; border-bottom:1px solid var(--border);
+  }
+  .ref-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(130px,1fr)); gap:6px; }
+  .ref-item {
+    background:var(--bg); border:1px solid var(--border); border-radius:4px;
+    padding:7px 9px; font-family:'DM Mono',monospace; font-size:0.62rem; color:var(--muted); line-height:1.6;
+  }
+  .ref-item strong { color:var(--text); display:block; margin-bottom:1px; }
+
+  /* ADS */
+  .ad-sidebar {
+    background:var(--surface); border:1px solid var(--border); border-radius:6px;
+    padding:12px; text-align:center; font-family:'DM Mono',monospace; font-size:0.56rem;
+    color:var(--muted); min-height:360px; display:flex; align-items:center;
+    justify-content:center; letter-spacing:1px; position:sticky; top:76px;
+  }
+  .ad-bottom {
+    background:var(--surface); border:1px solid var(--border); border-radius:6px;
+    padding:14px; text-align:center; font-family:'DM Mono',monospace; font-size:0.56rem;
+    color:var(--muted); margin-top:18px; min-height:80px;
+    display:flex; align-items:center; justify-content:center; letter-spacing:1px;
+  }
+
+  /* FOOTER */
+  footer {
+    border-top:1px solid var(--border); padding:18px; margin-top:32px;
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px;
+    font-family:'DM Mono',monospace; font-size:0.58rem; color:var(--muted);
+  }
+
+  .hidden { display:none !important; }
+
+  /* RESPONSIVE */
+  @media (max-width:680px) {
+    .layout { grid-template-columns:1fr; }
+    .ad-sidebar { display:none; }
+  }
+  @media (max-width:400px) {
+    .io-row { grid-template-columns:1fr; gap:8px; }
+    .swap-btn { margin:0 auto; }
+    .number-input, .result-display { font-size:1rem; padding:10px; }
+  }
+
+  /* [CHANGE 2] Input validation error state */
+  .number-input.input-error {
+    border-color: #ff4d4d;
+    box-shadow: 0 0 0 1px #ff4d4d;
+  }
+  .input-error-msg {
+    font-family:'DM Mono',monospace; font-size:0.56rem;
+    color:#ff4d4d; margin-top:4px; display:none;
+  }
+  .input-error-msg.visible { display:block; }
+
+  /* [CHANGE 1] Currency badge variants */
+  .live-badge.badge-cached { color:#f0c040; border-color:#f0c040; }
+  .live-badge.badge-cached .live-dot { background:#f0c040; animation:none; }
+  .live-badge.badge-error  { color:var(--muted); border-color:var(--border); }
+  .live-badge.badge-error  .live-dot { background:var(--muted); animation:none; }
+
+  /* [CHANGE 6] Reset button */
+  .reset-btn {
+    background:transparent; border:none; color:var(--muted);
+    font-family:'DM Mono',monospace; font-size:0.58rem; letter-spacing:1px;
+    cursor:pointer; padding:6px 10px; border-radius:4px;
+    transition:color 0.15s; text-transform:uppercase; margin-left:4px;
+  }
+  .reset-btn:hover { color:var(--text); }
+
+  /* [CHANGE 7] Mobile tab scroll hint — fade on right edge */
+  .tabs-wrap { position:relative; }
+  @media (max-width:600px) {
+    .tab { padding:8px 11px; font-size:0.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="logo">Convert<span>X</span></div>
+  <div class="tagline">Every unit.<br>Instantly.</div>
+</header>
+
+<!-- [CHANGE 5] Ad slot: Replace this div's content with your Google AdSense/ad network code.
+     Standard leaderboard 728x90. Remove this comment once ads are live. -->
+<div class="ad-banner" id="ad-top" aria-hidden="true">
+  <!-- INSERT AD CODE HERE (728×90 leaderboard) -->
+</div>
+
+<main>
+  <div class="layout">
+    <div>
+      <!-- TABS -->
+      <div class="tabs-wrap">
+        <div class="tabs">
+          <button class="tab active" onclick="switchTab('currency')">💱 Currency</button>
+          <button class="tab" onclick="switchTab('length')">📏 Length</button>
+          <button class="tab" onclick="switchTab('weight')">⚖️ Weight</button>
+          <button class="tab" onclick="switchTab('temp')">🌡️ Temp</button>
+          <button class="tab" onclick="switchTab('area')">▦ Area</button>
+          <button class="tab" onclick="switchTab('speed')">⚡ Speed</button>
+          <button class="tab" onclick="switchTab('volume')">🧪 Volume</button>
+          <button class="tab" onclick="switchTab('time')">⏱️ Time</button>
+          <button class="tab" onclick="switchTab('pressure')">🔵 Pressure</button>
+          <button class="tab" onclick="switchTab('data')">💾 Data</button>
+        </div>
+      </div>
+
+      <!-- CURRENCY -->
+      <div id="tab-currency" class="converter-card">
+        <div class="card-header">
+          <div class="card-title">Currency</div>
+          <!-- [CHANGE 1] Badge class updated dynamically by JS: badge-live / badge-cached / badge-error -->
+          <div class="live-badge" id="cur-badge"><div class="live-dot"></div><span id="cur-badge-text">RATES</span></div>
+        </div>
+        <div class="converter-body">
+          <div class="unit-row">
+            <div class="unit-group"><label>From</label>
+              <select class="unit-select" id="cur-from" onchange="convertCurrency()">
+                <option value="USD">USD — Dollar</option><option value="EUR">EUR — Euro</option>
+                <option value="INR" selected>INR — Rupee</option><option value="GBP">GBP — Pound</option>
+                <option value="JPY">JPY — Yen</option><option value="AUD">AUD — A$</option>
+                <option value="CAD">CAD — C$</option><option value="CHF">CHF — Franc</option>
+                <option value="CNY">CNY — Yuan</option><option value="SGD">SGD — S$</option>
+                <option value="AED">AED — Dirham</option><option value="SAR">SAR — Riyal</option>
+                <option value="MYR">MYR — Ringgit</option><option value="THB">THB — Baht</option>
+                <option value="KRW">KRW — Won</option><option value="BRL">BRL — Real</option>
+                <option value="ZAR">ZAR — Rand</option><option value="RUB">RUB — Ruble</option>
+                <option value="PKR">PKR — Pak Rs</option><option value="BDT">BDT — Taka</option>
+                <option value="NPR">NPR — Nep Rs</option><option value="IDR">IDR — Rupiah</option>
+                <option value="TRY">TRY — Lira</option><option value="MXN">MXN — Peso</option>
+              </select>
+            </div>
+            <div class="unit-group"><label>To</label>
+              <select class="unit-select" id="cur-to" onchange="convertCurrency()">
+                <option value="USD" selected>USD — Dollar</option><option value="EUR">EUR — Euro</option>
+                <option value="INR">INR — Rupee</option><option value="GBP">GBP — Pound</option>
+                <option value="JPY">JPY — Yen</option><option value="AUD">AUD — A$</option>
+                <option value="CAD">CAD — C$</option><option value="CHF">CHF — Franc</option>
+                <option value="CNY">CNY — Yuan</option><option value="SGD">SGD — S$</option>
+                <option value="AED">AED — Dirham</option><option value="SAR">SAR — Riyal</option>
+                <option value="MYR">MYR — Ringgit</option><option value="THB">THB — Baht</option>
+                <option value="KRW">KRW — Won</option><option value="BRL">BRL — Real</option>
+                <option value="ZAR">ZAR — Rand</option><option value="RUB">RUB — Ruble</option>
+                <option value="PKR">PKR — Pak Rs</option><option value="BDT">BDT — Taka</option>
+                <option value="NPR">NPR — Nep Rs</option><option value="IDR">IDR — Rupiah</option>
+                <option value="TRY">TRY — Lira</option><option value="MXN">MXN — Peso</option>
+              </select>
+            </div>
+          </div>
+          <div class="io-row">
+            <div class="input-group">
+              <label>Amount</label>
+              <!-- [CHANGE 6] Enter key triggers conversion -->
+              <input type="number" class="number-input" id="cur-input" value="1000"
+                oninput="debouncedConvert()" onkeydown="if(event.key==='Enter')convertCurrency()"
+                placeholder="0" min="0" autocomplete="off">
+              <div class="input-error-msg" id="cur-error">Enter a valid number</div>
+            </div>
+            <button class="swap-btn" onclick="swapCurrency()" title="Swap currencies">⇄</button>
+            <div class="input-group"><label>Result</label>
+              <div class="result-display" id="cur-result">—</div>
+            </div>
+          </div>
+          <div class="formula-bar" id="cur-formula">Fetching rates…</div>
+          <div class="currency-status" id="cur-status"></div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:10px;">
+            <button class="copy-btn" data-copy="cur-result" onclick="copyResult('cur-result')">Copy Result</button>
+            <!-- [CHANGE 6] Reset button -->
+            <button class="reset-btn" onclick="resetConverter('currency')" title="Clear input">✕ Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- LENGTH -->
+      <div id="tab-length" class="converter-card hidden">
+        <div class="card-header"><div class="card-title">Length</div></div>
+        <div class="converter-body">
+          <div class="unit-row">
+            <div class="unit-group"><label>From</label>
+              <select class="unit-select" id="len-from" onchange="convertUnit('length')">
+                <option value="m">Meter (m)</option><option value="km">Kilometer</option>
+                <option value="cm">Centimeter</option><option value="mm">Millimeter</option>
+                <option value="mi">Mile</option><option value="yd">Yard</option>
+                <option value="ft" selected>Foot</option><option value="inch">Inch</option>
+                <option value="nm">Nautical Mile</option><option value="um">Micrometer</option>
+              </select>
+            </div>
+            <div class="unit-group"><label>To</label>
+              <select class="unit-select" id="len-to" onchange="convertUnit('length')">
+                <option value="m" selected>Meter (m)</option><option value="km">Kilometer</option>
+                <option value="cm">Centimeter</option><option value="mm">Millimeter</option>
+                <option value="mi">Mile</option><option value="yd">Yard</option>
+                <option value="ft">Foot</option><option value="inch">Inch</option>
+                <option value="nm">Nautical Mile</option><option value="um">Micrometer</option>
+              </select>
+            </div>
+          </div>
+          <div class="io-row">
+            <div class="input-group"><label>Value</label>
+              <input type="number" class="number-input" id="len-input" value="1"
+                oninput="convertUnit('length')" onkeydown="if(event.key==='Enter')convertUnit('length')"
+                placeholder="0" autocomplete="off">
+              <div class="input-error-msg" id="len-error">Enter a valid number</div>
+            </div>
+            <button class="swap-btn" onclick="swapUnits('length')" title="Swap units">⇄</button>
+            <div class="input-group"><label>Result</label>
+              <div class="result-display" id="len-result">—</div>
+            </div>
+          </div>
+          <div class="formula-bar" id="len-formula">—</div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:10px;">
+            <button class="copy-btn" data-copy="len-result" onclick="copyResult('len-result')">Copy Result</button>
+            <button class="reset-btn" onclick="resetConverter('length')" title="Clear">✕ Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- WEIGHT -->
+      <div id="tab-weight" class="converter-card hidden">
+        <div class="card-header"><div class="card-title">Weight</div></div>
+        <div class="converter-body">
+          <div class="unit-row">
+            <div class="unit-group"><label>From</label>
+              <select class="unit-select" id="wt-from" onchange="convertUnit('weight')">
+                <option value="kg" selected>Kilogram (kg)</option><option value="g">Gram (g)</option>
+                <option value="mg">Milligram</option><option value="lb">Pound (lb)</option>
+                <option value="oz">Ounce (oz)</option><option value="t">Metric Ton</option>
+                <option value="st">Stone</option><option value="ct">Carat</option>
+              </select>
+            </div>
+            <div class="unit-group"><label>To</label>
+              <select class="unit-select" id="wt-to" onchange="convertUnit('weight')">
+                <option value="kg">Kilogram (kg)</option><option value="g">Gram (g)</option>
+                <option value="mg">Milligram</option><option value="lb" selected>Pound (lb)</option>
+                <option value="oz">Ounce (oz)</option><option value="t">Metric Ton</option>
+                <option value="st">Stone</option><option value="ct">Carat</option>
+              </select>
+            </div>
+          </div>
+          <div class="io-row">
+            <div class="input-group"><label>Value</label>
+              <input type="number" class="number-input" id="wt-input" value="1"
+                oninput="convertUnit('weight')" onkeydown="if(event.key==='Enter')convertUnit('weight')"
+                placeholder="0" autocomplete="off">
+              <div class="input-error-msg" id="wt-error">Enter a valid number</div>
+            </div>
+            <button class="swap-btn" onclick="swapUnits('weight')" title="Swap units">⇄</button>
+            <div class="input-group"><label>Result</label>
+              <div class="result-display" id="wt-result">—</div>
+            </div>
+          </div>
+          <div class="formula-bar" id="wt-formula">—</div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:10px;">
+            <button class="copy-btn" data-copy="wt-result" onclick="copyResult('wt-result')">Copy Result</button>
+            <button class="reset-btn" onclick="resetConverter('weight')" title="Clear">✕ Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- TEMPERATURE -->
+      <div id="tab-temp" class="converter-card hidden">
+        <div class="card-header"><div class="card-title">Temperature</div></div>
+        <div class="converter-body">
+          <div class="unit-row">
+            <div class="unit-group"><label>From</label>
+              <select class="unit-select" id="tmp-from" onchange="convertTemp()">
+                <option value="C" selected>Celsius (°C)</option><option value="F">Fahrenheit (°F)</option>
+                <option value="K">Kelvin (K)</option><option value="R">Rankine (°R)</option>
+              </select>
+            </div>
+            <div class="unit-group"><label>To</label>
+              <select class="unit-select" id="tmp-to" onchange="convertTemp()">
+                <option value="C">Celsius (°C)</option><option value="F" selected>Fahrenheit (°F)</option>
+                <option value="K">Kelvin (K)</option><option value="R">Rankine (°R)</option>
+              </select>
+            </div>
+          </div>
+          <div class="io-row">
+            <div class="input-group"><label>Value</label>
+              <input type="number" class="number-input" id="tmp-input" value="100"
+                oninput="convertTemp()" onkeydown="if(event.key==='Enter')convertTemp()"
+                placeholder="0" autocomplete="off">
+              <div class="input-error-msg" id="tmp-error">Enter a valid number</div>
+            </div>
+            <button class="swap-btn" onclick="swapUnits('temp')" title="Swap units">⇄</button>
+            <div class="input-group"><label>Result</label>
+              <div class="result-display" id="tmp-result">—</div>
+            </div>
+          </div>
+          <div class="formula-bar" id="tmp-formula">—</div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:10px;">
+            <button class="copy-btn" data-copy="tmp-result" onclick="copyResult('tmp-result')">Copy Result</button>
+            <button class="reset-btn" onclick="resetConverter('temp')" title="Clear">✕ Reset</button>
+          </div>
+          <div class="quick-ref">
+            <div class="quick-ref-title">Reference Points</div>
+            <div class="ref-grid">
+              <div class="ref-item"><strong>Water Freezes</strong>0°C = 32°F</div>
+              <div class="ref-item"><strong>Body Temp</strong>37°C = 98.6°F</div>
+              <div class="ref-item"><strong>Water Boils</strong>100°C = 212°F</div>
+              <div class="ref-item"><strong>Abs. Zero</strong>−273.15°C = 0K</div>
+              <div class="ref-item"><strong>Room Temp</strong>22°C = 71.6°F</div>
+              <div class="ref-item"><strong>Oven 180°C</strong>= 356°F</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- AREA -->
+      <div id="tab-area" class="converter-card hidden">
+        <div class="card-header"><div class="card-title">Area</div></div>
+        <div class="converter-body">
+          <div class="unit-row">
+            <div class="unit-group"><label>From</label>
+              <select class="unit-select" id="area-from" onchange="convertUnit('area')">
+                <option value="m2" selected>Sq Meter (m²)</option><option value="km2">Sq Km</option>
+                <option value="cm2">Sq Cm</option><option value="ha">Hectare</option>
+                <option value="ac">Acre</option><option value="ft2">Sq Foot</option>
+                <option value="in2">Sq Inch</option><option value="mi2">Sq Mile</option>
+                <option value="yd2">Sq Yard</option>
+              </select>
+            </div>
+            <div class="unit-group"><label>To</label>
+              <select class="unit-select" id="area-to" onchange="convertUnit('area')">
+                <option value="m2">Sq Meter (m²)</option><option value="km2">Sq Km</option>
+                <option value="cm2">Sq Cm</option><option value="ha">Hectare</option>
+                <option value="ac" selected>Acre</option><option value="ft2">Sq Foot</option>
+                <option value="in2">Sq Inch</option><option value="mi2">Sq Mile</option>
+                <option value="yd2">Sq Yard</option>
+              </select>
+            </div>
+          </div>
+          <div class="io-row">
+            <div class="input-group"><label>Value</label>
+              <input type="number" class="number-input" id="area-input" value="1000"
+                oninput="convertUnit('area')" onkeydown="if(event.key==='Enter')convertUnit('area')"
+                placeholder="0" autocomplete="off">
+              <div class="input-error-msg" id="area-error">Enter a valid number</div>
+            </div>
+            <button class="swap-btn" onclick="swapUnits('area')" title="Swap units">⇄</button>
+            <div class="input-group"><label>Result</label>
+              <div class="result-display" id="area-result">—</div>
+            </div>
+          </div>
+          <div class="formula-bar" id="area-formula">—</div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:10px;">
+            <button class="copy-btn" data-copy="area-result" onclick="copyResult('area-result')">Copy Result</button>
+            <button class="reset-btn" onclick="resetConverter('area')" title="Clear">✕ Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- SPEED -->
+      <div id="tab-speed" class="converter-card hidden">
+        <div class="card-header"><div class="card-title">Speed</div></div>
+        <div class="converter-body">
+          <div class="unit-row">
+            <div class="unit-group"><label>From</label>
+              <select class="unit-select" id="spd-from" onchange="convertUnit('speed')">
+                <option value="kmh" selected>km/h</option><option value="mph">mph</option>
+                <option value="ms">m/s</option><option value="kn">Knot</option>
+                <option value="mach">Mach</option><option value="ls">Light Speed</option>
+              </select>
+            </div>
+            <div class="unit-group"><label>To</label>
+              <select class="unit-select" id="spd-to" onchange="convertUnit('speed')">
+                <option value="kmh">km/h</option><option value="mph" selected>mph</option>
+                <option value="ms">m/s</option><option value="kn">Knot</option>
+                <option value="mach">Mach</option><option value="ls">Light Speed</option>
+              </select>
+            </div>
+          </div>
+          <div class="io-row">
+            <div class="input-group"><label>Value</label>
+              <input type="number" class="number-input" id="spd-input" value="100"
+                oninput="convertUnit('speed')" onkeydown="if(event.key==='Enter')convertUnit('speed')"
+                placeholder="0" autocomplete="off">
+              <div class="input-error-msg" id="spd-error">Enter a valid number</div>
+            </div>
+            <button class="swap-btn" onclick="swapUnits('speed')" title="Swap units">⇄</button>
+            <div class="input-group"><label>Result</label>
+              <div class="result-display" id="spd-result">—</div>
+            </div>
+          </div>
+          <div class="formula-bar" id="spd-formula">—</div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:10px;">
+            <button class="copy-btn" data-copy="spd-result" onclick="copyResult('spd-result')">Copy Result</button>
+            <button class="reset-btn" onclick="resetConverter('speed')" title="Clear">✕ Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- VOLUME -->
+      <div id="tab-volume" class="converter-card hidden">
+        <div class="card-header"><div class="card-title">Volume</div></div>
+        <div class="converter-body">
+          <div class="unit-row">
+            <div class="unit-group"><label>From</label>
+              <select class="unit-select" id="vol-from" onchange="convertUnit('volume')">
+                <option value="l" selected>Liter (L)</option><option value="ml">Milliliter (mL)</option>
+                <option value="m3">Cubic Meter</option><option value="cm3">Cubic Cm</option>
+                <option value="gal">Gallon (US)</option><option value="qt">Quart (US)</option>
+                <option value="pt">Pint (US)</option><option value="cup">Cup (US)</option>
+                <option value="floz">Fl Oz (US)</option><option value="tbsp">Tablespoon</option>
+                <option value="tsp">Teaspoon</option>
+              </select>
+            </div>
+            <div class="unit-group"><label>To</label>
+              <select class="unit-select" id="vol-to" onchange="convertUnit('volume')">
+                <option value="l">Liter (L)</option><option value="ml">Milliliter (mL)</option>
+                <option value="m3">Cubic Meter</option><option value="cm3">Cubic Cm</option>
+                <option value="gal" selected>Gallon (US)</option><option value="qt">Quart (US)</option>
+                <option value="pt">Pint (US)</option><option value="cup">Cup (US)</option>
+                <option value="floz">Fl Oz (US)</option><option value="tbsp">Tablespoon</option>
+                <option value="tsp">Teaspoon</option>
+              </select>
+            </div>
+          </div>
+          <div class="io-row">
+            <div class="input-group"><label>Value</label>
+              <input type="number" class="number-input" id="vol-input" value="1"
+                oninput="convertUnit('volume')" onkeydown="if(event.key==='Enter')convertUnit('volume')"
+                placeholder="0" autocomplete="off">
+              <div class="input-error-msg" id="vol-error">Enter a valid number</div>
+            </div>
+            <button class="swap-btn" onclick="swapUnits('volume')" title="Swap units">⇄</button>
+            <div class="input-group"><label>Result</label>
+              <div class="result-display" id="vol-result">—</div>
+            </div>
+          </div>
+          <div class="formula-bar" id="vol-formula">—</div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:10px;">
+            <button class="copy-btn" data-copy="vol-result" onclick="copyResult('vol-result')">Copy Result</button>
+            <button class="reset-btn" onclick="resetConverter('volume')" title="Clear">✕ Reset</button>
+          </div>
+          <div class="quick-ref">
+            <div class="quick-ref-title">Common References</div>
+            <div class="ref-grid">
+              <div class="ref-item"><strong>1 Gallon</strong>3.785 Liters</div>
+              <div class="ref-item"><strong>1 Cup</strong>236.6 mL</div>
+              <div class="ref-item"><strong>1 Fl Oz</strong>29.57 mL</div>
+              <div class="ref-item"><strong>1 Tbsp</strong>14.79 mL</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TIME -->
+      <div id="tab-time" class="converter-card hidden">
+        <div class="card-header"><div class="card-title">Time</div></div>
+        <div class="converter-body">
+          <div class="unit-row">
+            <div class="unit-group"><label>From</label>
+              <select class="unit-select" id="time-from" onchange="convertUnit('time')">
+                <option value="us">Microsecond</option><option value="ms">Millisecond</option>
+                <option value="s">Second</option><option value="min" selected>Minute</option>
+                <option value="hr">Hour</option><option value="day">Day</option>
+                <option value="wk">Week</option><option value="mo">Month</option>
+                <option value="yr">Year</option><option value="dec">Decade</option>
+                <option value="cent">Century</option>
+              </select>
+            </div>
+            <div class="unit-group"><label>To</label>
+              <select class="unit-select" id="time-to" onchange="convertUnit('time')">
+                <option value="us">Microsecond</option><option value="ms">Millisecond</option>
+                <option value="s" selected>Second</option><option value="min">Minute</option>
+                <option value="hr">Hour</option><option value="day">Day</option>
+                <option value="wk">Week</option><option value="mo">Month</option>
+                <option value="yr">Year</option><option value="dec">Decade</option>
+                <option value="cent">Century</option>
+              </select>
+            </div>
+          </div>
+          <div class="io-row">
+            <div class="input-group"><label>Value</label>
+              <input type="number" class="number-input" id="time-input" value="1"
+                oninput="convertUnit('time')" onkeydown="if(event.key==='Enter')convertUnit('time')"
+                placeholder="0" autocomplete="off">
+              <div class="input-error-msg" id="time-error">Enter a valid number</div>
+            </div>
+            <button class="swap-btn" onclick="swapUnits('time')" title="Swap units">⇄</button>
+            <div class="input-group"><label>Result</label>
+              <div class="result-display" id="time-result">—</div>
+            </div>
+          </div>
+          <div class="formula-bar" id="time-formula">—</div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:10px;">
+            <button class="copy-btn" data-copy="time-result" onclick="copyResult('time-result')">Copy Result</button>
+            <button class="reset-btn" onclick="resetConverter('time')" title="Clear">✕ Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- PRESSURE -->
+      <div id="tab-pressure" class="converter-card hidden">
+        <div class="card-header"><div class="card-title">Pressure</div></div>
+        <div class="converter-body">
+          <div class="unit-row">
+            <div class="unit-group"><label>From</label>
+              <select class="unit-select" id="pres-from" onchange="convertUnit('pressure')">
+                <option value="pa">Pascal (Pa)</option><option value="kpa" selected>Kilopascal (kPa)</option>
+                <option value="mpa">Megapascal (MPa)</option><option value="bar">Bar</option>
+                <option value="mbar">Millibar</option><option value="atm">Atmosphere</option>
+                <option value="psi">PSI</option><option value="mmhg">mmHg (Torr)</option>
+                <option value="inhg">inHg</option>
+              </select>
+            </div>
+            <div class="unit-group"><label>To</label>
+              <select class="unit-select" id="pres-to" onchange="convertUnit('pressure')">
+                <option value="pa">Pascal (Pa)</option><option value="kpa">Kilopascal (kPa)</option>
+                <option value="mpa">Megapascal (MPa)</option><option value="bar">Bar</option>
+                <option value="mbar">Millibar</option><option value="atm">Atmosphere</option>
+                <option value="psi" selected>PSI</option><option value="mmhg">mmHg (Torr)</option>
+                <option value="inhg">inHg</option>
+              </select>
+            </div>
+          </div>
+          <div class="io-row">
+            <div class="input-group"><label>Value</label>
+              <input type="number" class="number-input" id="pres-input" value="100"
+                oninput="convertUnit('pressure')" onkeydown="if(event.key==='Enter')convertUnit('pressure')"
+                placeholder="0" autocomplete="off">
+              <div class="input-error-msg" id="pres-error">Enter a valid number</div>
+            </div>
+            <button class="swap-btn" onclick="swapUnits('pressure')" title="Swap units">⇄</button>
+            <div class="input-group"><label>Result</label>
+              <div class="result-display" id="pres-result">—</div>
+            </div>
+          </div>
+          <div class="formula-bar" id="pres-formula">—</div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:10px;">
+            <button class="copy-btn" data-copy="pres-result" onclick="copyResult('pres-result')">Copy Result</button>
+            <button class="reset-btn" onclick="resetConverter('pressure')" title="Clear">✕ Reset</button>
+          </div>
+          <div class="quick-ref">
+            <div class="quick-ref-title">Common References</div>
+            <div class="ref-grid">
+              <div class="ref-item"><strong>1 atm</strong>101.325 kPa</div>
+              <div class="ref-item"><strong>1 bar</strong>100 kPa</div>
+              <div class="ref-item"><strong>Car Tyre</strong>~32 PSI</div>
+              <div class="ref-item"><strong>Sea Level</strong>1 atm</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DATA -->
+      <!-- [CHANGE 3] Renamed to binary (KiB/MiB/GiB) for accuracy — 1 KiB = 1024 bytes -->
+      <div id="tab-data" class="converter-card hidden">
+        <div class="card-header"><div class="card-title">Data Storage</div></div>
+        <div class="converter-body">
+          <div class="unit-row">
+            <div class="unit-group"><label>From</label>
+              <select class="unit-select" id="data-from" onchange="convertUnit('data')">
+                <option value="bit">Bit (b)</option>
+                <option value="Byt">Byte (B)</option>
+                <option value="KiB" selected>Kibibyte (KiB)</option>
+                <option value="MiB">Mebibyte (MiB)</option>
+                <option value="GiB">Gibibyte (GiB)</option>
+                <option value="TiB">Tebibyte (TiB)</option>
+                <option value="PiB">Pebibyte (PiB)</option>
+              </select>
+            </div>
+            <div class="unit-group"><label>To</label>
+              <select class="unit-select" id="data-to" onchange="convertUnit('data')">
+                <option value="bit">Bit (b)</option>
+                <option value="Byt">Byte (B)</option>
+                <option value="KiB">Kibibyte (KiB)</option>
+                <option value="MiB" selected>Mebibyte (MiB)</option>
+                <option value="GiB">Gibibyte (GiB)</option>
+                <option value="TiB">Tebibyte (TiB)</option>
+                <option value="PiB">Pebibyte (PiB)</option>
+              </select>
+            </div>
+          </div>
+          <div class="io-row">
+            <div class="input-group"><label>Value</label>
+              <input type="number" class="number-input" id="data-input" value="1024"
+                oninput="convertUnit('data')" onkeydown="if(event.key==='Enter')convertUnit('data')"
+                placeholder="0" autocomplete="off">
+              <div class="input-error-msg" id="data-error">Enter a valid number</div>
+            </div>
+            <button class="swap-btn" onclick="swapUnits('data')" title="Swap units">⇄</button>
+            <div class="input-group"><label>Result</label>
+              <div class="result-display" id="data-result">—</div>
+            </div>
+          </div>
+          <div class="formula-bar" id="data-formula">—</div>
+          <div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:10px;">
+            <button class="copy-btn" data-copy="data-result" onclick="copyResult('data-result')">Copy Result</button>
+            <button class="reset-btn" onclick="resetConverter('data')" title="Clear">✕ Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- [CHANGE 5] Ad slot: Replace with your ad network code (728×90 banner) -->
+      <div class="ad-bottom" id="ad-bottom" aria-hidden="true">
+        <!-- INSERT AD CODE HERE (728×90 banner) -->
+      </div>
+    </div>
+
+    <!-- [CHANGE 5] Ad slot: Replace with your ad network code (160×600 skyscraper) -->
+    <div class="ad-sidebar" id="ad-sidebar" aria-hidden="true">
+      <!-- INSERT AD CODE HERE (160×600 skyscraper) -->
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div>© <span id="footer-year">2026</span> ConvertX — Conversions approximate</div><!-- FIX 3: Year now set dynamically by JS -->
+  <div>Currency: exchangerate-api.com</div>
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════
+// DOM CACHE — query once, reuse everywhere
+// ═══════════════════════════════════════════════
+const $ = id => document.getElementById(id);
+const DOM = {
+  curFrom:    $('cur-from'),
+  curTo:      $('cur-to'),
+  curInput:   $('cur-input'),
+  curResult:  $('cur-result'),
+  curFormula: $('cur-formula'),
+  curStatus:  $('cur-status'),
+  curBadge:   $('cur-badge'),
+  curBadgeTxt:$('cur-badge-text'),
+  curError:   $('cur-error'),
+};
+
+// ═══════════════════════════════════════════════
+// [CHANGE 1] CURRENCY — caching, fallback, badge states
+// ═══════════════════════════════════════════════
+const CACHE_KEY  = 'cvx_rates';
+const CACHE_TIME = 'cvx_rates_ts';
+const CACHE_DATE = 'cvx_rates_date';
+const TTL_MS     = 60 * 60 * 1000; // 1 hour
+
+let rates = {};
+let ratesLoaded = false;
+
+// [CHANGE 1] Update badge: 'live' | 'cached' | 'error'
+function setBadge(state, text) {
+  DOM.curBadge.className = 'live-badge' + (state !== 'live' ? ` badge-${state}` : '');
+  DOM.curBadgeTxt.textContent = text;
+}
+
+function setCurrencyLoading() {
+  DOM.curResult.textContent  = '—';
+  DOM.curFormula.textContent = '⏳ Loading rates…';
+  DOM.curStatus.textContent  = '';
+  setBadge('live', 'LOADING');
+}
+
+function applyRates(rateObj, dateStr, source) {
+  rates = rateObj;
+  ratesLoaded = true;
+  if (source === 'fresh') {
+    setBadge('live', 'LIVE RATES');
+    DOM.curStatus.textContent = `Updated: ${dateStr}`;
+  } else if (source === 'cache') {
+    setBadge('live', 'LIVE RATES');
+    DOM.curStatus.textContent = `Cached: ${dateStr}`;
+  } else {
+    // fallback (stale or offline)
+    setBadge('cached', 'CACHED RATES');
+    DOM.curStatus.textContent = `⚠ Using last saved rates (${dateStr})`;
+  }
+  DOM.curFormula.textContent = 'Rates loaded — enter amount above.';
+  convertCurrency();
+}
+
+// [CHANGE 1] Primary + fallback APIs, then localStorage stale fallback
+async function fetchRates() {
+  // 1. Check fresh localStorage cache (within TTL)
+  try {
+    const ts = parseInt(localStorage.getItem(CACHE_TIME) || '0', 10);
+    if (Date.now() - ts < TTL_MS) {
+      const cached = JSON.parse(localStorage.getItem(CACHE_KEY));
+      const date   = localStorage.getItem(CACHE_DATE) || 'cached';
+      if (cached && typeof cached === 'object') {
+        applyRates(cached, date, 'cache');
+        return;
+      }
+    }
+  } catch(_) { /* corrupted cache, fall through */ }
+
+  setCurrencyLoading();
+
+  // 2. Try primary API
+  const APIS = [
+    'https://api.exchangerate-api.com/v4/latest/USD',
+    'https://open.er-api.com/v6/latest/USD',
+  ];
+
+  for (const url of APIS) {
+    try {
+      const res  = await fetch(url, { signal: AbortSignal.timeout(6000) });
+      if (!res.ok) continue;
+      const data = await res.json();
+      // Normalise: v4 uses data.rates; v6 uses data.rates too
+      const fetchedRates = data.rates;
+      const fetchedDate  = data.date || data.time_last_update_utc?.slice(0, 10) || 'today';
+      if (!fetchedRates || typeof fetchedRates !== 'object') continue;
+
+      try {
+        localStorage.setItem(CACHE_KEY,  JSON.stringify(fetchedRates));
+        localStorage.setItem(CACHE_TIME, Date.now().toString());
+        localStorage.setItem(CACHE_DATE, fetchedDate);
+      } catch(_) { /* private mode / storage full */ }
+
+      applyRates(fetchedRates, fetchedDate, 'fresh');
+      return; // success — stop trying
+    } catch(_) { /* this API failed, try next */ }
+  }
+
+  // 3. All APIs failed — try stale cache
+  try {
+    const stale = JSON.parse(localStorage.getItem(CACHE_KEY));
+    const date  = localStorage.getItem(CACHE_DATE) || 'unknown date';
+    if (stale && typeof stale === 'object') {
+      applyRates(stale, date, 'fallback');
+      return;
+    }
+  } catch(_) {}
+
+  // 4. Nothing at all
+  setBadge('error', 'UNAVAILABLE');
+  DOM.curFormula.textContent = '⚠ Rates unavailable — check your connection.';
+  DOM.curStatus.textContent  = '';
+}
+
+// [CHANGE 4] Debounced conversion — 300ms after user stops typing
+let _debounceTimer = null;
+function debouncedConvert() {
+  clearTimeout(_debounceTimer);
+  _debounceTimer = setTimeout(convertCurrency, 300);
+}
+
+// [CHANGE 2] Input validation helper
+const MAX_SAFE_INPUT = 1e15;
+function validateInput(inputEl, errorEl) {
+  const raw = inputEl.value.trim();
+  if (raw === '') {
+    inputEl.classList.remove('input-error');
+    errorEl.classList.remove('visible');
+    return null; // empty — clear result, no error shown
+  }
+  const val = parseFloat(raw);
+  if (isNaN(val)) {
+    inputEl.classList.add('input-error');
+    errorEl.textContent = 'Enter a valid number';
+    errorEl.classList.add('visible');
+    return null;
+  }
+  if (Math.abs(val) > MAX_SAFE_INPUT) {
+    inputEl.classList.add('input-error');
+    errorEl.textContent = 'Value too large';
+    errorEl.classList.add('visible');
+    return null;
+  }
+  inputEl.classList.remove('input-error');
+  errorEl.classList.remove('visible');
+  return val;
+}
+
+function convertCurrency() {
+  if (!ratesLoaded) return;
+  const val = validateInput(DOM.curInput, DOM.curError);
+  if (val === null) { DOM.curResult.textContent = '—'; return; }
+  const from = DOM.curFrom.value;
+  const to   = DOM.curTo.value;
+  if (!rates[from] || !rates[to]) return;
+  const result = (val / rates[from]) * rates[to];
+  const rate   = rates[to] / rates[from];
+  DOM.curResult.textContent  = fmt(result);
+  DOM.curFormula.textContent = `1 ${from} = ${fmt(rate)} ${to}   ·   ${fmt(val)} ${from} = ${fmt(result)} ${to}`;
+}
+
+function swapCurrency() {
+  [DOM.curFrom.value, DOM.curTo.value] = [DOM.curTo.value, DOM.curFrom.value];
+  convertCurrency();
+}
+
+// ═══════════════════════════════════════════════
+// [CHANGE 3] UNIT DATA — data storage renamed to KiB/MiB/GiB (binary)
+// ═══════════════════════════════════════════════
+const UNITS = {
+  length:   { m:1, km:1000, cm:0.01, mm:0.001, mi:1609.344, yd:0.9144, ft:0.3048, inch:0.0254, nm:1852, um:1e-6 },
+  weight:   { kg:1, g:0.001, mg:1e-6, lb:0.453592, oz:0.0283495, t:1000, st:6.35029, ct:0.0002 },
+  area:     { m2:1, km2:1e6, cm2:1e-4, ha:1e4, ac:4046.86, ft2:0.092903, in2:6.4516e-4, mi2:2589988.11, yd2:0.836127 },
+  speed:    { kmh:1/3.6, mph:0.44704, ms:1, kn:0.514444, mach:340.29, ls:2.998e8 },
+  volume:   { l:1, ml:0.001, m3:1000, cm3:0.001, gal:3.78541, qt:0.946353, pt:0.473176, cup:0.236588, floz:0.0295735, tbsp:0.0147868, tsp:0.00492892 },
+  time:     { us:1e-6, ms:0.001, s:1, min:60, hr:3600, day:86400, wk:604800, mo:2629800, yr:31557600, dec:315576000, cent:3155760000 },
+  pressure: { pa:1, kpa:1000, mpa:1e6, bar:1e5, mbar:100, atm:101325, psi:6894.76, mmhg:133.322, inhg:3386.39 },
+  // [CHANGE 3] Binary units: 1 KiB = 1024 B, consistent with IEC standard
+  data:     { bit:0.125, Byt:1, KiB:1024, MiB:1024**2, GiB:1024**3, TiB:1024**4, PiB:1024**5 }
+};
+
+const LABELS = {
+  length:   { m:'m', km:'km', cm:'cm', mm:'mm', mi:'mi', yd:'yd', ft:'ft', inch:'in', nm:'NM', um:'μm' },
+  weight:   { kg:'kg', g:'g', mg:'mg', lb:'lb', oz:'oz', t:'t', st:'st', ct:'ct' },
+  area:     { m2:'m²', km2:'km²', cm2:'cm²', ha:'ha', ac:'ac', ft2:'ft²', in2:'in²', mi2:'mi²', yd2:'yd²' },
+  speed:    { kmh:'km/h', mph:'mph', ms:'m/s', kn:'kn', mach:'Mach', ls:'c' },
+  volume:   { l:'L', ml:'mL', m3:'m³', cm3:'cm³', gal:'gal', qt:'qt', pt:'pt', cup:'cup', floz:'fl oz', tbsp:'tbsp', tsp:'tsp' },
+  time:     { us:'μs', ms:'ms', s:'s', min:'min', hr:'hr', day:'day', wk:'wk', mo:'mo', yr:'yr', dec:'decade', cent:'century' },
+  pressure: { pa:'Pa', kpa:'kPa', mpa:'MPa', bar:'bar', mbar:'mbar', atm:'atm', psi:'psi', mmhg:'mmHg', inhg:'inHg' },
+  // [CHANGE 3] Labels match new KiB/MiB names
+  data:     { bit:'bit', Byt:'B', KiB:'KiB', MiB:'MiB', GiB:'GiB', TiB:'TiB', PiB:'PiB' }
+};
+
+const PREFIX = { length:'len', weight:'wt', area:'area', speed:'spd', volume:'vol', time:'time', pressure:'pres', data:'data' };
+
+// Cache unit DOM refs on first use per type
+const _unitDOM = {};
+function getUnitDOM(type) {
+  if (!_unitDOM[type]) {
+    const p = PREFIX[type];
+    _unitDOM[type] = {
+      from:    $(`${p}-from`),
+      to:      $(`${p}-to`),
+      input:   $(`${p}-input`),
+      result:  $(`${p}-result`),
+      formula: $(`${p}-formula`),
+      error:   $(`${p}-error`),
+    };
+  }
+  return _unitDOM[type];
+}
+
+// [CHANGE 2] convertUnit now validates input
+function convertUnit(type) {
+  const d   = getUnitDOM(type);
+  const val = validateInput(d.input, d.error);
+  if (val === null) { d.result.textContent = '—'; d.formula.textContent = '—'; return; }
+  const from   = d.from.value;
+  const to     = d.to.value;
+  const result = (val * UNITS[type][from]) / UNITS[type][to];
+  const rate   = UNITS[type][from] / UNITS[type][to];
+  const fl = LABELS[type][from], tl = LABELS[type][to];
+  d.result.textContent  = fmt(result);
+  d.formula.textContent = `1 ${fl} = ${fmt(rate)} ${tl}   ·   ${fmt(val)} ${fl} = ${fmt(result)} ${tl}`;
+}
+
+function swapUnits(type) {
+  if (type === 'temp') { swapTemp(); return; }
+  const d = getUnitDOM(type);
+  [d.from.value, d.to.value] = [d.to.value, d.from.value];
+  convertUnit(type);
+}
+
+// ═══════════════════════════════════════════════
+// TEMPERATURE
+// ═══════════════════════════════════════════════
+const _tmpDOM = {
+  from:    $('tmp-from'),
+  to:      $('tmp-to'),
+  input:   $('tmp-input'),
+  result:  $('tmp-result'),
+  formula: $('tmp-formula'),
+  error:   $('tmp-error'),
+};
+
+// [CHANGE 2] convertTemp now validates input
+function convertTemp() {
+  const val = validateInput(_tmpDOM.input, _tmpDOM.error);
+  if (val === null) { _tmpDOM.result.textContent = '—'; _tmpDOM.formula.textContent = '—'; return; }
+  const from = _tmpDOM.from.value;
+  const to   = _tmpDOM.to.value;
+  let c   = from==='C'?val : from==='F'?(val-32)*5/9 : from==='K'?val-273.15 : (val-491.67)*5/9;
+  let res = to==='C'?c : to==='F'?c*9/5+32 : to==='K'?c+273.15 : (c+273.15)*9/5;
+  const fL = {C:'°C',F:'°F',K:'K',R:'°R'}[from];
+  const tL = {C:'°C',F:'°F',K:'K',R:'°R'}[to];
+  _tmpDOM.result.textContent = fmt(res);
+  const formulas = {
+    'C-F':'°F = °C × 9/5 + 32','F-C':'°C = (°F − 32) × 5/9',
+    'C-K':'K = °C + 273.15','K-C':'°C = K − 273.15',
+    'F-K':'K = (°F + 459.67) × 5/9','K-F':'°F = K × 9/5 − 459.67'
+  };
+  _tmpDOM.formula.textContent = from===to
+    ? `${val} ${fL} = ${fmt(res)} ${tL}`
+    : (formulas[`${from}-${to}`] || `${fmt(val)} ${fL} → ${fmt(res)} ${tL}`);
+}
+
+function swapTemp() {
+  [_tmpDOM.from.value, _tmpDOM.to.value] = [_tmpDOM.to.value, _tmpDOM.from.value];
+  convertTemp();
+}
+
+// ═══════════════════════════════════════════════
+// [CHANGE 6] RESET — clear input + result for any converter
+// ═══════════════════════════════════════════════
+function resetConverter(type) {
+  if (type === 'currency') {
+    DOM.curInput.value = '';
+    DOM.curResult.textContent = '—';
+    DOM.curFormula.textContent = ratesLoaded ? 'Enter an amount above.' : 'Fetching rates…';
+    DOM.curError.classList.remove('visible');
+    DOM.curInput.classList.remove('input-error');
+    DOM.curInput.focus();
+    return;
+  }
+  if (type === 'temp') {
+    _tmpDOM.input.value = '';
+    _tmpDOM.result.textContent = '—';
+    _tmpDOM.formula.textContent = '—';
+    _tmpDOM.error.classList.remove('visible');
+    _tmpDOM.input.classList.remove('input-error');
+    _tmpDOM.input.focus();
+    return;
+  }
+  const d = getUnitDOM(type);
+  d.input.value = '';
+  d.result.textContent  = '—';
+  d.formula.textContent = '—';
+  d.error.classList.remove('visible');
+  d.input.classList.remove('input-error');
+  d.input.focus();
+}
+
+// ═══════════════════════════════════════════════
+// TABS — cache tab + button elements
+// ═══════════════════════════════════════════════
+const ALL_TABS  = ['currency','length','weight','temp','area','speed','volume','time','pressure','data'];
+const _tabEls   = ALL_TABS.map(t => $(`tab-${t}`));
+const _tabBtns  = Array.from(document.querySelectorAll('.tab'));
+
+// [CHANGE 6] Auto-focus on input when switching tabs
+function switchTab(name) {
+  const idx = ALL_TABS.indexOf(name);
+  _tabEls.forEach((el, i)  => el.classList.toggle('hidden', i !== idx));
+  _tabBtns.forEach((el, i) => el.classList.toggle('active', i === idx));
+
+  if      (name === 'currency') { convertCurrency(); setTimeout(() => DOM.curInput.focus(), 50); }
+  else if (name === 'temp')     { convertTemp();     setTimeout(() => _tmpDOM.input.focus(), 50); }
+  else {
+    convertUnit(name);
+    const d = getUnitDOM(name);
+    setTimeout(() => d.input.focus(), 50);
+  }
+}
+
+// ═══════════════════════════════════════════════
+// FORMAT
+// ═══════════════════════════════════════════════
+function fmt(n) {
+  if (n === 0 || isNaN(n)) return '0';
+  const a = Math.abs(n);
+  if (a < 1e-9)  return n.toExponential(4);
+  if (a >= 1e15) return n.toExponential(4);
+  if (a >= 1e9)  return n.toLocaleString('en-US', {maximumFractionDigits: 0});
+  if (a >= 1000) return n.toLocaleString('en-US', {maximumFractionDigits: 2});
+  if (a >= 1)    return parseFloat(n.toFixed(6)).toString();
+  return parseFloat(n.toPrecision(5)).toString();
+}
+
+// ═══════════════════════════════════════════════
+// COPY
+// ═══════════════════════════════════════════════
+function copyResult(id) {
+  const text = $(id).textContent.trim();
+  if (!text || text === '—') return;
+  navigator.clipboard.writeText(text).then(() => {
+    const btn = document.querySelector(`[data-copy="${id}"]`);
+    if (btn) { btn.textContent = '✓ Copied!'; setTimeout(() => btn.textContent = 'Copy Result', 1500); }
+  });
+}
+
+// ═══════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════
+fetchRates();
+['length','weight','area','speed','volume','time','pressure','data'].forEach(t => convertUnit(t));
+convertTemp();
+// FIX 3: Set footer year dynamically
+document.getElementById('footer-year').textContent = new Date().getFullYear();
+</script>
+</body>
+</html>
